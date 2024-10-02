@@ -1,0 +1,27 @@
+{% extends 'speakers/base.html' %}
+{% load static %}
+{% block title %}speaker_card{% endblock %}
+
+{% block content %}
+    <div class="info-container">
+        <label for="id_field" class="primary-text">id заявки</label>
+        <input type="text" size="3" name="id_field" readonly value="{{meetup_id}}">
+        <label for="topic_field" class="primary-text">тема</label>
+        <input type="text" size="10" name="topic_field" readonly value="{{meetup_info.topic}}">
+        <label for="date_field" class="primary-text">дата</label>
+        <input type="date" size="10" name="date_field" readonly value="{{meetup_info.date}}">
+    </div>
+    <div class="meetup-card-list">
+        {% for key, value in  speakers_list.items %}
+        <div class="speaker-card">
+            <div class="text-container">
+                <p class="primary-text"> {{key}}</p>
+            </div>
+            <img src="{% static value.img_short %}" alt="speaker">
+            <div class="text-container">
+                <p class="primary-text"> {{value.name}} {{value.surname}}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

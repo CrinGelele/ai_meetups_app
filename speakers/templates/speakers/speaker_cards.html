@@ -1,0 +1,30 @@
+{% extends 'speakers/base.html' %}
+{% load static %}
+{% block title %}speaker_card{% endblock %}
+
+{% block content %}
+    <div class="search-container">
+        <form method="get" action="/speakers/">
+            <input type="text" name="srch" value="{{srch}}">
+            <input type="submit" class="search-btn" value="Поиск">
+        </form>
+    </div>
+    <div class="card-list">
+        {% for key, value in speakers.items %}
+            <div class="speaker-card" onclick="location.href='page/?speaker_id={{key}}'";>
+                <img src="{% static value.img_short %}" alt="speaker">
+                <div class="text-container">
+                    <p class="primary-text"> {{value.name}} {{value.surname}}</p>
+                    <p class="secondary-text">{{value.short_disc}}</p>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="speaker-card" onclick="location.href='meetup/?meetup_id={{current_meetup_id}}'";>
+            <img src="{% static "img/default-speaker.png" %}" alt="speaker">
+            <div class="text-container">
+                <p class="primary-text">{{meetup.topic}}</p>
+                <p class="secondary-text">{{speakers_quantity}} speakers</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

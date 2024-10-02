@@ -1,0 +1,15 @@
+{% extends 'speakers/base.html' %}
+{% load static %}
+{% block title %}speaker_card{% endblock %}
+
+{% block content %}
+    <div class="page-container">
+        <div class="text-container">
+            <p class="primary-text">{{speaker_info.name}} {{speaker_info.surname}}</p>
+            <p class="secondary-text">{{speaker_info.short_disc}}</p>
+            <p class="info-text">{{speaker_info.long_disc}}</p>
+                <button class="submit_btn">Submit</button>
+        </div>
+        <img src="{% static speaker_info.img_short %}" alt="speaker">
+    </div>
+{% endblock %}
