@@ -10,6 +10,6 @@
             <p class="info-text">{{speaker_info.long_disc}}</p>
                 <button class="submit_btn">Submit</button>
         </div>
-        <img src="{% static speaker_info.img_short %}" alt="speaker">
+        <img src="{{ speaker_info.img_url }}" alt="speaker">
     </div>
 {% endblock %}
