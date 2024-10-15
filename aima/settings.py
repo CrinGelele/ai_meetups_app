@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'aima.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'aima_database',
+        'USER': 'student',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': 5432, # Стандартный порт PostgreSQL
     }
 }
 
@@ -126,10 +130,3 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_STORAGE_BUCKET_NAME = 'aima'     # Бакет должен уже быть создан
-AWS_ACCESS_KEY_ID = 'JNcoJW132hiMcCjvFCpd'
-AWS_SECRET_ACCESS_KEY = 'C5T1hLvT4SX2lnCLgWVCq5M5pIonvsr4OtXOLhSz'
-AWS_S3_ENDPOINT_URL = 'http://192.168.1.80:35299/'
