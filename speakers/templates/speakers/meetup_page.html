@@ -10,6 +10,7 @@
         <input type="text" size="10" name="topic_field" readonly value="{{meetup_info.topic}}">
         <label for="date_field" class="primary-text">дата</label>
         <input type="date" size="10" name="date_field" readonly value="{{meetup_info.date}}">
+        <button class="submit-btn">Отправить</button>
     </div>
     <div class="meetup-card-list">
         {% for key, value in  speakers_list.items %}
@@ -17,9 +18,13 @@
             <div class="text-container">
                 <p class="primary-text"> {{key}}</p>
             </div>
-            <img src="{{value.img_url}}" alt="speaker">
+            <img src="{{value.speaker.img_url}}" alt="speaker">
             <div class="text-container">
-                <p class="primary-text"> {{value.name}} {{value.surname}}</p>
+                <p class="primary-text"> {{value.speaker.name}} {{value.speaker.surname}}</p>
+            </div>
+            <input class="duration-input" type="text" size="10" name="approx_perfomance_duration_field" value="{{value.approx_perfomance_duration}}">
+            <div class="text-container">
+                <p class="primary-text">минут</p>
             </div>
         </div>
         {% endfor %}
