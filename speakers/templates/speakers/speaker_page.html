@@ -5,9 +5,10 @@
 {% block content %}
     <div class="page-container">
         <div class="text-container">
-            <p class="primary-text">{{speaker_info.name}} {{speaker_info.surname}}</p>
-            <p class="secondary-text">{{speaker_info.short_disc}}</p>
-            <p class="info-text">{{speaker_info.long_disc}}</p>
+            <p class="primary-text">{{speaker_info.first_name}}</p>
+            <p class="primary-text">{{speaker_info.last_name}}</p>
+            <p class="secondary-text">{{speaker_info.workplace}}</p>
+            <p class="info-text">{{speaker_info.description}}</p>
                 <button class="submit_btn">Пригласить</button>
         </div>
         <img src="{{ speaker_info.img_url }}" alt="speaker">

@@ -10,14 +10,14 @@
         </form>
     </div>
     <div class="card-list">
-        {% for key, value in speakers.items %}
-            <div class="speaker-card" onclick="location.href='{% url 'speaker_page' key %}'";>
+        {% for speaker in speakers %}
+            <div class="speaker-card" onclick="location.href='{% url 'speaker_page' speaker.id %}'";>
                 <div class="text-container">
-                    <p class="primary-text">{{value.name}}</p>
-                    <p class="primary-text">{{value.surname}}</p>
-                    <p class="secondary-text">{{value.short_disc}}</p>
+                    <p class="primary-text">{{speaker.first_name}}</p>
+                    <p class="primary-text">{{speaker.last_name}}</p>
+                    <p class="secondary-text">{{speaker.workplace}}</p>
                 </div>
-                <img src="{{value.img_url}}" alt="speaker">
+                <img src="{{speaker.img_url}}" alt="speaker">
             </div>
         {% endfor %}
         <div class="meetup-card" onclick="location.href='{% url 'meetup_page' current_meetup_id %}'";> 
