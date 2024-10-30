@@ -20,9 +20,17 @@
                 <img src="{{speaker.img_url}}" alt="speaker">
             </div>
         {% endfor %}
+        {% if current_meetup_id %}
         <div class="meetup-card" onclick="location.href='{% url 'meetup_page' current_meetup_id %}'";> 
             <p class="speakers-counter">{{speakers_quantity}}</p>
             <img src="{% static "img/meetup_icon.jpg" %}" alt="meetup_icon">
         </div>
+        {% else %}
+        <div class="meetup-card"> 
+            <p class="speakers-counter"></p>
+            <img src="{% static "img/meetup_icon.jpg" %}" alt="meetup_icon">
+        </div>
+        {% endif %}
     </div>
+    
 {% endblock %}

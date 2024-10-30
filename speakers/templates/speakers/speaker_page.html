@@ -9,7 +9,11 @@
             <p class="primary-text">{{speaker_info.last_name}}</p>
             <p class="secondary-text">{{speaker_info.workplace}}</p>
             <p class="info-text">{{speaker_info.description}}</p>
-                <button class="submit_btn">Пригласить</button>
+            <form action="{% url 'invite_speaker' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" hidden name="speaker_id" value="{{speaker_info.id}}">
+                <button type="submit" class="submit_btn">Пригласить</button>
+            </form>
         </div>
         <img src="{{ speaker_info.img_url }}" alt="speaker">
     </div>

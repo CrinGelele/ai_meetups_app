@@ -3,30 +3,39 @@
 {% block title %}speaker_card{% endblock %}
 
 {% block content %}
+    {% if meetup_info.status == 'Удалена' %}
+        <p class="deleted-meetup-alert">Данная заявка была удалена!</p>
+    {% else %}
     <div class="info-container">
         <label for="id_field" class="primary-text">id заявки</label>
         <input type="text" size="3" name="id_field" readonly value="{{meetup_id}}">
         <label for="topic_field" class="primary-text">тема</label>
-        <input type="text" size="10" name="topic_field" readonly value="{{meetup_info.topic}}">
+        <input type="text" size="10" name="topic_field" value="{{meetup_info.topic}}">
         <label for="date_field" class="primary-text">дата</label>
-        <input type="date" size="10" name="date_field" readonly value="{{meetup_info.date}}">
+        <input type="date" size="10" name="date_field" value="{{meetup_info.date}}">
         <button class="submit-btn">Отправить</button>
+        <form action="{% url 'delete_meetup' %}" method="POST">
+            {% csrf_token %}
+            <input type="text" hidden name="meetup_id" value="{{meetup_info.id}}">
+            <button type="submit" class="submit-btn">Удалить</button>
+        </form>
     </div>
     <div class="meetup-card-list">
-        {% for key, value in  speakers_list.items %}
+        {% for invite in invites %}
         <div class="speaker-card">
             <div class="text-container">
-                <p class="primary-text"> {{key}}</p>
+                <p class="primary-text"> {{invite.speaker.id}}</p>
             </div>
-            <img src="{{value.speaker.img_url}}" alt="speaker">
+            <img src="{{invite.speaker.img_url}}" alt="speaker">
             <div class="text-container">
-                <p class="primary-text"> {{value.speaker.name}} {{value.speaker.surname}}</p>
+                <p class="primary-text"> {{invite.speaker.first_name}} {{invite.speaker.last_name}}</p>
             </div>
-            <input class="duration-input" type="text" size="10" name="approx_perfomance_duration_field" value="{{value.approx_perfomance_duration}}">
+            <input class="duration-input" type="text" size="10" name="approx_perfomance_duration_field" value="{{invite.approx_perfomance_duration}}">
             <div class="text-container">
                 <p class="primary-text">минут</p>
             </div>
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 {% endblock %}

@@ -1,45 +1,44 @@
-from django.shortcuts import render
-import wget
-import os
-from django.http import HttpResponse
-from .models import Speaker
+from django.shortcuts import render, redirect
+from .models import Speaker, Meetup, Invite
+from django.contrib.auth import get_user_model
+from django.db import connection
 
-meetups = [
-    {
-        'id': 1,
-        'date': '2024-10-03',
-        'topic': 'AI',
-        'speakers': [{'id': 1, 'approx_perfomance_duration': 30}, {'id': 3, 'approx_perfomance_duration': 45}]
-    }
-]
+current_user_id = 1
 
-current_meetup_id = 1
+def invite_speaker(request):
+    current_meetup = Meetup.objects.filter(user_id = current_user_id) &  Meetup.objects.filter(status = 'Черновик')
+    current_meetup_id = current_meetup[0].id if current_meetup else None
+    if request.method == 'POST':
+        if current_meetup:
+            Invite(meetup = Meetup.objects.get(id = current_meetup_id), speaker = Speaker.objects.get(id = request.POST['speaker_id'])).save()
+        else:
+            Meetup(status = 'Черновик', user = get_user_model().objects.get(id = current_user_id)).save()
+            current_meetup = Meetup.objects.filter(user_id = current_user_id) &  Meetup.objects.filter(status = 'Черновик')
+            current_meetup_id = current_meetup[0].id if current_meetup else None
+            Invite(meetup = Meetup.objects.get(id = current_meetup_id), speaker = Speaker.objects.get(id = request.POST['speaker_id'])).save()
+    return redirect(speakers_menu)
+
+def delete_meetup(request):
+    if request.method == 'POST':
+        connection.cursor().execute("UPDATE meetups SET status = 'Удалена' WHERE id = %s", [request.POST['meetup_id']])
+    return redirect(speakers_menu) 
 
 def speakers_menu(request):
+    current_meetup = Meetup.objects.filter(user_id = current_user_id) &  Meetup.objects.filter(status = 'Черновик')
+    current_meetup_id = current_meetup[0].id if current_meetup else None
     speaker_name_to_find = request.GET.get('speaker_name_to_find')
-    speakers_quantity = 0
-    for meetup in meetups:
-        if meetup['id'] == current_meetup_id:
-            current_meetup = meetup
-            speakers_quantity = len(meetup['speakers'])
-            break
     context = {'speakers': Speaker.objects.all() if not speaker_name_to_find else Speaker.objects.filter(first_name__icontains = speaker_name_to_find) | Speaker.objects.filter(last_name__icontains = speaker_name_to_find),
-                'current_meetup_id': current_meetup_id, 'meetup': current_meetup,
-               'speakers_quantity': speakers_quantity, 'speaker_name_to_find': '' if not speaker_name_to_find else speaker_name_to_find}
+                'current_meetup_id': current_meetup_id, 'meetup': Meetup.objects.get(id=current_meetup_id) if current_meetup_id else None,
+               'speakers_quantity': len(Invite.objects.filter(meetup = current_meetup_id)) if current_meetup_id else None,
+               'speaker_name_to_find': '' if not speaker_name_to_find else speaker_name_to_find} #if current_meetup_id else { 'meetup_deleted': True}
     return render(request, 'speakers/speaker_cards.html', context)
 
-def speaker_page(request, speaker_id):
+def speaker_page(request, speaker_id): 
     context = {'speaker_info': Speaker.objects.get(id=speaker_id)}
     return render(request, 'speakers/speaker_page.html', context)
 
 def meetup_page(request, meetup_id):
-    speakers_list = {}
-    for meetup in meetups:
-        if meetup['id'] == meetup_id:
-            current_meetup = meetup
-            for speaker in meetup['speakers']:
-                speakers_list[speaker['id']] = {'speaker': speakers[speaker['id']],
-                                                'approx_perfomance_duration': speaker['approx_perfomance_duration']}
-            break
-    context = {'meetup_id': meetup_id, 'meetup_info': current_meetup, 'speakers_list': speakers_list}
+    current_meetup = Meetup.objects.filter(user_id = current_user_id) &  Meetup.objects.filter(status = 'Черновик')
+    current_meetup_id = current_meetup[0].id if current_meetup else None
+    context = {'meetup_id': meetup_id, 'meetup_info': Meetup.objects.get(id=meetup_id), 'invites': Invite.objects.filter(meetup = current_meetup_id)}
     return render(request, 'speakers/meetup_page.html', context)
