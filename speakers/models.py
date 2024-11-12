@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from datetime import date
+from random import randint
 
 class Speaker(models.Model):
     first_name = models.CharField(max_length = 35, blank = False)
@@ -21,6 +22,13 @@ class Meetup(models.Model):
     resolve_date = models.DateTimeField(null = True, blank = True)
     topic = models.TextField(null = True, blank = True)
     meetup_date = models.DateTimeField(null = True, blank = True)
+    viewers = models.IntegerField(null = True, blank = True)
+
+    def save(self, force_insert=False, force_update=False):
+        if self.status == 'Завершён':
+            self.viewers = randint(1, 50)
+        super(Meetup, self).save(force_insert, force_update)
+
     class Meta:
         db_table = "meetups"
 

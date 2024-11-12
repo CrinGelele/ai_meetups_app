@@ -3,16 +3,14 @@
 {% block title %}speaker_card{% endblock %}
 
 {% block content %}
-    {% if meetup_info.status == 'Удалена' %}
-        <p class="deleted-meetup-alert">Данная заявка была удалена!</p>
-    {% else %}
+    {% if meetup_info %}
     <div class="info-container">
         <label for="id_field" class="primary-text">id заявки</label>
         <input type="text" size="3" name="id_field" readonly value="{{meetup_id}}">
         <label for="topic_field" class="primary-text">тема</label>
-        <input type="text" size="10" name="topic_field" value="{{meetup_info.topic}}">
+        <input type="text" size="10" name="topic_field" value="{{meetup_info.topic|default_if_none:""}}">
         <label for="date_field" class="primary-text">дата</label>
-        <input type="date" size="10" name="date_field" value="{{meetup_info.date}}">
+        <input type="date" size="10" name="date_field" value="{{meetup_info.date|default_if_none:""}}">
         <button class="submit-btn">Отправить</button>
         <form action="{% url 'delete_meetup' %}" method="POST">
             {% csrf_token %}
@@ -30,7 +28,7 @@
             <div class="text-container">
                 <p class="primary-text"> {{invite.speaker.first_name}} {{invite.speaker.last_name}}</p>
             </div>
-            <input class="duration-input" type="text" size="10" name="approx_perfomance_duration_field" value="{{invite.approx_perfomance_duration}}">
+            <input class="duration-input" type="text" size="10" name="approx_perfomance_duration_field" value="{{invite.approx_perfomance_duration|default_if_none:""}}">
             <div class="text-container">
                 <p class="primary-text">минут</p>
             </div>
