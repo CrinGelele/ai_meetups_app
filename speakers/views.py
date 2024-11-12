@@ -41,5 +41,5 @@ def speaker_page(request, speaker_id):
 def meetup_page(request, meetup_id):
     current_meetup = Meetup.objects.filter(id = meetup_id) & Meetup.objects.filter(~Q(status = 'Удалена'))
     current_meetup_id = current_meetup[0].id if current_meetup else None
-    context = {'meetup_id': meetup_id, 'meetup_info': current_meetup[0], 'invites': Invite.objects.filter(meetup = current_meetup_id)}
+    context = {'meetup_id': meetup_id, 'meetup_info': current_meetup[0] if current_meetup else None, 'invites': Invite.objects.filter(meetup = current_meetup_id)}
     return render(request, 'speakers/meetup_page.html', context)
