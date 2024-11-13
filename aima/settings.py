@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'speakers.apps.SpeakersConfig'
+    'speakers.apps.SpeakersConfig',
+    'rest_framework',
+    'api.apps.ApiConfig',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -104,6 +107,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AWS_STORAGE_BUCKET_NAME = 'speakers-img-storage'
+AWS_ACCESS_KEY_ID = 'minio'
+AWS_SECRET_ACCESS_KEY = 'minio124'
+AWS_S3_ENDPOINT_URL = 'localhost:9001'
+MINIO_USE_SSL = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

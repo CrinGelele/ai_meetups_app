@@ -31,7 +31,7 @@ def speakers_menu(request):
     context = {'speakers': Speaker.objects.filter(~Q(deletion_flag = True)) if not speaker_name_to_find else Speaker.objects.filter(~Q(deletion_flag = True)) & (Speaker.objects.filter(first_name__icontains = speaker_name_to_find) | Speaker.objects.filter(last_name__icontains = speaker_name_to_find)),
                 'current_meetup_id': current_meetup_id, 'meetup': Meetup.objects.get(id=current_meetup_id) if current_meetup_id else None,
                'speakers_quantity': len(Invite.objects.filter(meetup = current_meetup_id)) if current_meetup_id else None,
-               'speaker_name_to_find': '' if not speaker_name_to_find else speaker_name_to_find} #if current_meetup_id else { 'meetup_deleted': True}
+               'speaker_name_to_find': '' if not speaker_name_to_find else speaker_name_to_find}
     return render(request, 'speakers/speaker_cards.html', context)
 
 def speaker_page(request, speaker_id): 

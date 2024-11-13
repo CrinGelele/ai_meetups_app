@@ -15,8 +15,8 @@ class Speaker(models.Model):
 
 class Meetup(models.Model):
     status = models.CharField(max_length = 15, blank = False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank = False, related_name="user_action")
-    moderator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank = True, null = True, related_name="moderator_action")
+    user = models.ForeignKey('AuthUser', on_delete=models.PROTECT, blank = False, related_name="user_action")
+    moderator = models.ForeignKey('AuthUser', on_delete=models.PROTECT, blank = True, null = True, related_name="moderator_action")
     creation_date = models.DateTimeField(auto_now_add = True, blank = False)
     submit_date = models.DateTimeField(null = True, blank = True)
     resolve_date = models.DateTimeField(null = True, blank = True)
@@ -41,3 +41,19 @@ class Invite(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['speaker', 'meetup'], name='UQ_Invites_speaker_id_and_meetup_id')
         ]
+
+class AuthUser(models.Model):
+    password = models.CharField(max_length=128)
+    last_login = models.DateTimeField(blank=True, null=True)
+    is_superuser = models.BooleanField(default=False)
+    username = models.CharField(unique=True, max_length=150)
+    last_name = models.CharField(max_length=150)
+    email = models.CharField(max_length=254)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now=True)
+    first_name = models.CharField(max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user'
