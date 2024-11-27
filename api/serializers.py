@@ -20,7 +20,7 @@ class MeetupSerializer(serializers.ModelSerializer):
 
 class InviteSerializer(serializers.ModelSerializer):
     meetup = serializers.CharField(read_only = True)
-    speaker = serializers.CharField(read_only = True)
+    speaker = SpeakerSerializer(read_only=True)
     class Meta:
         model = Invite
         fields = ["id", "meetup", "speaker", "approx_perfomance_duration"]
@@ -29,3 +29,14 @@ class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AuthUser
         fields = ["id", "first_name", "last_name", "email"]
+        read_only_fields = ['id']
+
+class AuthUserRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuthUser
+        fields = ["username", "first_name", "last_name", "email", "username", "password"]
+        write_only_fields = ['password']
+
+class AuthUserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)

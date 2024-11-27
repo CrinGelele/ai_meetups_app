@@ -25,7 +25,7 @@ class Meetup(models.Model):
     viewers = models.IntegerField(null = True, blank = True)
 
     def save(self, force_insert=False, force_update=False):
-        if self.status == 'Завершён':
+        if self.status == 'Завершена':
             self.viewers = randint(1, 50)
         super(Meetup, self).save(force_insert, force_update)
 

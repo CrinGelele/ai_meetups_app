@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AWS_STORAGE_BUCKET_NAME = 'speakers-img-storage'
 AWS_ACCESS_KEY_ID = 'minio'
 AWS_SECRET_ACCESS_KEY = 'minio124'
-AWS_S3_ENDPOINT_URL = 'localhost:9001'
+AWS_S3_ENDPOINT_URL = 'localhost:9000'
 MINIO_USE_SSL = False
 
 # Internationalization
