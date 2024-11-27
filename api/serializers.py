@@ -1,6 +1,6 @@
 from speakers.models import Speaker, Invite, Meetup, AuthUser
 from rest_framework import serializers
-
+from collections import OrderedDict
 
 class SpeakerSerializer(serializers.ModelSerializer):
     class Meta:

@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.utils import timezone
 from .minio import add_pic, process_file_remove
 import os
+from drf_yasg.utils import swagger_auto_schema
 
 def get_user():
     return AuthUser.objects.filter(is_staff=False).first()
@@ -36,6 +37,7 @@ class SpeakersList(APIView):
                          'speakers_quantity': len(Invite.objects.filter(meetup = current_meetup_id)) if current_meetup_id else None,
                          "speakers": serializer.data})
     
+    @swagger_auto_schema(request_body=SpeakerSerializer)
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -52,6 +54,7 @@ class SpeakerSingle(APIView):
         serializer = self.serializer_class(speaker)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=SpeakerSerializer)
     def put(self, request, speaker_id, format=None):
         speaker = get_object_or_404(self.model_class, id=speaker_id)
         serializer = self.serializer_class(speaker, data=request.data, partial=True)
@@ -60,6 +63,7 @@ class SpeakerSingle(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @swagger_auto_schema(request_body=SpeakerSerializer)
     def post(self, request, speaker_id, format=None):
         current_meetup = Meetup.objects.filter(user = get_user()) & Meetup.objects.filter(status = 'Черновик')
         speaker = get_object_or_404(self.model_class, id=speaker_id)

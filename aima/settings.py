@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'speakers.apps.SpeakersConfig',
     'rest_framework',
     'api.apps.ApiConfig',
-    'django_filters'
+    'django_filters',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
