@@ -169,10 +169,10 @@ def change_status_by_moderator(request, meetup_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
     if 'status' not in request.data.keys():
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    new_status = request.data['status']
-    if new_status not in ['Завершена', 'Отклонена'] or get_moderator().is_staff == False:
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     meetup = Meetup.objects.get(id=meetup_id)
+    new_status = request.data['status']
+    if meetup.status != 'Сформирована' or new_status not in ['Завершена', 'Отклонена'] or get_moderator().is_staff == False:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     meetup.status = new_status
     meetup.resolve_date = timezone.now()
     meetup.moderator = get_moderator()
@@ -186,7 +186,6 @@ class InviteSingle(APIView):
 
     def put(self, request, meetup_id, speaker_id, format=None):
         invite = get_object_or_404(self.model_class.objects.filter(speaker_id=speaker_id), meetup_id=meetup_id)
-        invite.approx_perfomance_duration = request.GET.get('approx_perfomance_duration')
         serializer = self.serializer_class(invite, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
