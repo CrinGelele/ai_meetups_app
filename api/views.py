@@ -1,12 +1,15 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from api.serializers import SpeakerSerializer, MeetupSerializer, InviteSerializer, AuthUserSerializer, AuthUserLoginSerializer, AuthUserRegisterSerializer
-from django.contrib.auth import authenticate
+from api.serializers import SpeakerSerializer, MeetupSerializer, InviteSerializer, UserSerializer # AuthUserSerializer, AuthUserLoginSerializer, AuthUserRegisterSerializer
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
-from speakers.models import Speaker, Meetup, Invite, AuthUser
+from speakers.models import Speaker, Meetup, Invite, CustomUser
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.db.models import Q
 from django.utils import timezone
 from .minio import add_pic, process_file_remove
@@ -20,6 +23,7 @@ def get_moderator():
     return AuthUser.objects.filter(is_staff=True).first()
 
 class SpeakersList(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     model_class = Speaker
     serializer_class = SpeakerSerializer
     
@@ -46,6 +50,7 @@ class SpeakersList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SpeakerSingle(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     model_class = Speaker
     serializer_class = SpeakerSerializer
     
@@ -85,6 +90,7 @@ class SpeakerSingle(APIView):
         speaker.save()
         return Response({"message":"Successfully deleted."})
 
+@authentication_classes([])
 @api_view(["POST"])
 def update_speaker_image(request, speaker_id):
     if not Speaker.objects.get(id=speaker_id):
@@ -97,6 +103,7 @@ def update_speaker_image(request, speaker_id):
     return Response(image_result.data)
 
 class MeetupsList(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     model_class = Meetup
     serializer_class = MeetupSerializer
 
@@ -124,6 +131,7 @@ class MeetupsList(APIView):
             return Response({"message":"Success."})
 
 class MeetupSingle(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     model_class = Meetup
     serializer_class = MeetupSerializer
 
@@ -149,7 +157,8 @@ class MeetupSingle(APIView):
         meetup.submit_date = timezone.now()
         meetup.save()
         return Response({"message":"Successfully deleted."})
-
+    
+@authentication_classes([])
 @api_view(["PUT"])
 def change_status_by_user(request, meetup_id):
     if not Meetup.objects.filter(id=meetup_id):
@@ -163,6 +172,7 @@ def change_status_by_user(request, meetup_id):
     serializer = MeetupSerializer(meetup, many=False)
     return Response(serializer.data)
 
+@authentication_classes([])
 @api_view(["PUT"])
 def change_status_by_moderator(request, meetup_id):
     if not Meetup.objects.filter(id=meetup_id):
@@ -181,6 +191,7 @@ def change_status_by_moderator(request, meetup_id):
     return Response(serializer.data)
 
 class InviteSingle(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     model_class = Invite
     serializer_class = InviteSerializer
 
@@ -197,40 +208,35 @@ class InviteSingle(APIView):
         invite.delete()
         return Response({"message":"Successfully deleted."})
     
-class UserViewSet(viewsets.ViewSet):
-    queryset = AuthUser.objects.all()
-    serializer_class = AuthUserSerializer
+class UserViewSet(viewsets.ModelViewSet):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    model_class = CustomUser
 
-    def update(self, request, pk=None):
-        querry_object = get_object_or_404(self.queryset, id=pk)
-        serializer = self.serializer_class(querry_object, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=False, methods=['POST'])
-    def registration(self, request):
-        serializer = AuthUserRegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=False, methods=['POST'])
-    def authentication(self, request):
-        serializer = AuthUserLoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
-        user = authenticate(**serializer.data)
-        if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        return Response(AuthUserSerializer(user).data, status=status.HTTP_200_OK)
+@permission_classes([AllowAny])
+@authentication_classes([])
+@csrf_exempt
+@swagger_auto_schema(method='post', request_body=UserSerializer)
+@api_view(['POST'])
+def login_view(request):
+    username =  request.data.get('username', False)
+    password =  request.data.get('password', False)
+    user = authenticate(request, username=username, password=password) if username and password else None
+    if user is not None:
+        login(request, user)
+        return Response("{'status': 'ok'}")
+    else:
+        return Response("{'status': 'error', 'error': 'login failed'}")
 
-    @action(detail=False, methods=['POST'])
-    def deauthorization(self, request):
-        return Response(status=status.HTTP_200_OK)
+@permission_classes([AllowAny])
+@authentication_classes([])
+@csrf_exempt
+@swagger_auto_schema(method='post', request_body=UserSerializer)
+@api_view(['POST'])
+def logout_view(request):
+    logout(request)
+    return Response({'status': 'Success'})
         
 
 

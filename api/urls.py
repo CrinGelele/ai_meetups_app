@@ -1,9 +1,9 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework import routers
 from . import views
 
-router = DefaultRouter()
-router.register('', views.UserViewSet, basename='user')
+router = routers.DefaultRouter()
+router.register(r'user', views.UserViewSet, basename='user')
 
 urlpatterns = [
    path('speakers/', views.SpeakersList.as_view(), name='speakers-list'),
@@ -14,5 +14,6 @@ urlpatterns = [
    path('meetups/<int:meetup_id>/submit/', views.change_status_by_user, name='meetups-submit'),
    path('meetups/<int:meetup_id>/moderate/', views.change_status_by_moderator, name='meetups-moderate'),
    path('invites/<int:meetup_id>/<int:speaker_id>/', views.InviteSingle.as_view(), name='invite-single'),
-   path('users/', include(router.urls))
+   path('login/',  views.login_view, name='login'),
+   path('logout/', views.logout_view, name='logout'),
 ] 

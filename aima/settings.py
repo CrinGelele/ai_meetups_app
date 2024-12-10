@@ -44,6 +44,15 @@ INSTALLED_APPS = [
     'drf_yasg'
 ]
 
+AUTH_USER_MODEL = "speakers.CustomUser"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,7 +90,7 @@ WSGI_APPLICATION = 'aima.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'aima_database',
+        'NAME': 'aima_db',
         'USER': 'student',
         'PASSWORD': 'root',
         'HOST': 'localhost',

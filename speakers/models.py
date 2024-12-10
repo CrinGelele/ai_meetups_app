@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from datetime import date
 from random import randint
+from django.contrib.auth.models import UserManager, AbstractBaseUser, PermissionsMixin
 
 class Speaker(models.Model):
     first_name = models.CharField(max_length = 35, blank = False)
@@ -15,8 +16,8 @@ class Speaker(models.Model):
 
 class Meetup(models.Model):
     status = models.CharField(max_length = 15, blank = False)
-    user = models.ForeignKey('AuthUser', on_delete=models.PROTECT, blank = False, related_name="user_action")
-    moderator = models.ForeignKey('AuthUser', on_delete=models.PROTECT, blank = True, null = True, related_name="moderator_action")
+    user = models.ForeignKey('CustomUser', on_delete=models.PROTECT, blank = False, related_name="user_action")
+    moderator = models.ForeignKey('CustomUser', on_delete=models.PROTECT, blank = True, null = True, related_name="moderator_action")
     creation_date = models.DateTimeField(auto_now_add = True, blank = False)
     submit_date = models.DateTimeField(null = True, blank = True)
     resolve_date = models.DateTimeField(null = True, blank = True)
@@ -42,18 +43,22 @@ class Invite(models.Model):
             models.UniqueConstraint(fields=['speaker', 'meetup'], name='UQ_Invites_speaker_id_and_meetup_id')
         ]
 
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField(default=False)
-    username = models.CharField(unique=True, max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(auto_now=True)
-    first_name = models.CharField(max_length=150)
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(unique=True, max_length=150, verbose_name="Логин")
+    password = models.CharField(max_length=128, verbose_name="Пароль")
+    email = models.EmailField(unique=True) 
+    is_staff = models.BooleanField(default=False, verbose_name="Является ли пользователь менеджером?")
+    is_superuser = models.BooleanField(default=False, verbose_name="Является ли пользователь админом?")
 
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
+    objects =  UserManager()
+
+    USERNAME_FIELD = 'username'
+
+    def create_superuser(self, username, password, email=None):
+        user = self.create_user(
+            username=username,
+            password=password
+        )
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
