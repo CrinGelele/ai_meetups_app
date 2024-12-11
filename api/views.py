@@ -160,7 +160,7 @@ class MeetupsList(APIView):
     serializer_class = MeetupSerializer
 
     @swagger_auto_schema(operation_id="get_meetups_list", operation_description="Получить список митапов", tags=["Meetups"])
-    @method_permission_classes((IsModerator,))
+    @method_permission_classes((IsAuthentificated,))
     def get(self, request, format=None):
         status = request.GET.get('status', '')
         start = request.GET.get('start')
@@ -171,6 +171,8 @@ class MeetupsList(APIView):
                                                     )
         else:
             meetups = self.model_class.objects.filter(~Q(status="Черновик") & ~Q(status="Удалена") & Q(status__contains=status))
+        if not get_user(request).is_staff:
+            meetups = self.model_class.objects.filter(Q(user=get_user(request)))
         serializer = self.serializer_class(meetups, many=True)
         return Response(serializer.data)
     
