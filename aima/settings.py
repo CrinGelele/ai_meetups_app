@@ -44,12 +44,14 @@ INSTALLED_APPS = [
     'drf_yasg'
 ]
 
-AUTH_USER_MODEL = "speakers.CustomUser"
+REDIS_HOST = '0.0.0.0'
+REDIS_PORT = 6379
+
+AUTH_USER_MODEL = 'speakers.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ]
 }
 

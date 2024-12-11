@@ -46,7 +46,7 @@ class Invite(models.Model):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True, max_length=150, verbose_name="Логин")
     password = models.CharField(max_length=128, verbose_name="Пароль")
-    email = models.EmailField(unique=True) 
+    email = models.EmailField() 
     is_staff = models.BooleanField(default=False, verbose_name="Является ли пользователь менеджером?")
     is_superuser = models.BooleanField(default=False, verbose_name="Является ли пользователь админом?")
 
