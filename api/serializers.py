@@ -23,7 +23,7 @@ class MeetupSerializer(serializers.ModelSerializer):
     viewers = serializers.CharField(read_only = True)
     class Meta:
         model = Meetup
-        fields = ["id", "status", "user", "moderator", "creation_date", "submit_date", "resolve_date", "topic", "meetup_date", "viewers"]
+        fields = ["id", "status", "user", "moderator", "creation_date", "submit_date", "resolve_date", "topic", "meetup_date", "viewers", "qr"]
 
         def get_fields(self):
             new_fields = OrderedDict()

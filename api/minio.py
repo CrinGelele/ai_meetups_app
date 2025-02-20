@@ -3,12 +3,30 @@ from rest_framework.response import Response
 from minio import Minio
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.response import *
-
+'''
 def process_file_upload(file_object: InMemoryUploadedFile, client, image_name):
     try:
         client.put_object('speakers-img-storage', image_name, file_object, file_object.size)
         return f"http://localhost:9000/speakers-img-storage/{image_name}"
     except Exception as e:
+        return {"error": str(e)} '''
+def process_file_upload(file_object: InMemoryUploadedFile, client, image_name):
+    try:
+        # Загружаем файл с правильными заголовками и размером
+        client.put_object(
+            bucket_name='speakers-img-storage',
+            object_name=image_name,
+            data=file_object,
+            content_type=file_object.content_type,
+            length=file_object.size,
+            metadata={
+                'Content-Disposition': 'inline'
+            }
+        )
+        
+        return f"http://localhost:9000/speakers-img-storage/{image_name}"
+    except Exception as e:
+        print(e)
         return {"error": str(e)}
 
 def process_file_remove(image_name):

@@ -21,6 +21,7 @@ from django.conf import settings
 import redis
 import uuid
 from rest_framework import permissions
+from .services.qr_generate import generate_qr
 
 session_storage = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, decode_responses=True)
 
@@ -84,7 +85,7 @@ class SpeakersList(APIView):
                          "speakers": serializer.data})
     
     @swagger_auto_schema(operation_id="create_speaker", operation_description="Добавить нового спикера", request_body=SpeakerSerializer, tags=["Speakers"])
-    @method_permission_classes((IsModerator))
+    @method_permission_classes((IsModerator,))
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -105,7 +106,7 @@ class SpeakerSingle(APIView):
         return Response(serializer.data)
     
     @swagger_auto_schema(operation_id="edit_single_speaker", request_body=SpeakerSerializer, operation_description="Изменить информацию о спикере", tags=["Speakers"])
-    @method_permission_classes((IsModerator))
+    @method_permission_classes((IsModerator,))
     def put(self, request, speaker_id, format=None):
         speaker = get_object_or_404(self.model_class, id=speaker_id)
         serializer = self.serializer_class(speaker, data=request.data, partial=True)
@@ -115,7 +116,7 @@ class SpeakerSingle(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @swagger_auto_schema(operation_id="invite_single_speaker", operation_description="Пригласить спикера на митап", tags=["Speakers"])
-    @method_permission_classes((IsUser,))
+    @method_permission_classes((IsAuthentificated,))
     def post(self, request, speaker_id, format=None):
         current_meetup = Meetup.objects.filter(user = get_user(request)) & Meetup.objects.filter(status = 'Черновик')
         speaker = get_object_or_404(self.model_class, id=speaker_id)
@@ -131,9 +132,10 @@ class SpeakerSingle(APIView):
     @method_permission_classes((IsModerator,))
     def delete(self, request, speaker_id, format=None):
         speaker = get_object_or_404(self.model_class, id=speaker_id)
-        image_remove_result = process_file_remove(os.path.basename(speaker.img_url))
-        if 'error' in image_remove_result.data:
-            return image_remove_result
+        if speaker.img_url:
+            image_remove_result = process_file_remove(os.path.basename(speaker.img_url))
+            if 'error' in image_remove_result.data:
+                return image_remove_result
         speaker.img_url = None
         speaker.deletion_flag = True
         speaker.save()
@@ -143,7 +145,7 @@ class SpeakerSingle(APIView):
 @csrf_exempt
 @swagger_auto_schema(method='post', operation_id="add_speaker_photo", operation_description="Добавить фото спикера", tags=["Speakers"])
 @api_view(['POST'])
-@permission_classes([IsModerator])
+@permission_classes([IsAuthentificated])
 def update_speaker_image(request, speaker_id):
     if not Speaker.objects.get(id=speaker_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -194,7 +196,7 @@ class MeetupSingle(APIView):
     serializer_class = MeetupSerializer
 
     @swagger_auto_schema(operation_id="get_single_meetup", operation_description="Получить информацию о митапе", tags=["Meetups"])
-    @method_permission_classes((IsUser, IsModerator))
+    @method_permission_classes((IsAuthentificated,))
     def get(self, request, meetup_id, format=None):
         meetup = get_object_or_404(self.model_class, id=meetup_id)
         meetup_serializer = self.serializer_class(meetup)
@@ -204,7 +206,7 @@ class MeetupSingle(APIView):
                          "speakers" : speakers_serializer.data})
 
     @swagger_auto_schema(operation_id="change_single_meetup", request_body=MeetupSerializer, operation_description="Изменить информацию о митапе", tags=["Meetups"])
-    @method_permission_classes((IsUser, IsModerator))
+    @method_permission_classes((IsAuthentificated,))
     def put(self, request, meetup_id, format=None):
         meetup = get_object_or_404(self.model_class, id=meetup_id)
         serializer = self.serializer_class(meetup, data=request.data, partial=True)
@@ -213,8 +215,8 @@ class MeetupSingle(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @swagger_auto_schema(operation_id="delete_single_meetup", request_body=MeetupSerializer, operation_description="Удалить информацию о митапе", tags=["Meetups"])
-    @method_permission_classes((IsUser))
+    @swagger_auto_schema(operation_id="delete_single_meetup", operation_description="Удалить информацию о митапе", tags=["Meetups"])
+    @method_permission_classes((IsUser,))
     def delete(self, request, meetup_id, format=None):
         meetup = get_object_or_404(self.model_class, id=meetup_id)
         if meetup.user != get_user(request):
@@ -253,6 +255,8 @@ def change_status_by_moderator(request, meetup_id):
     new_status = request.data['status']
     if meetup.status != 'Сформирована' or new_status not in ['Завершена', 'Отклонена'] or get_user(request).is_staff == False:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    qr_code_base64 = generate_qr(meetup)
+    meetup.qr = qr_code_base64
     meetup.status = new_status
     meetup.resolve_date = timezone.now()
     meetup.moderator = get_user(request)
@@ -266,7 +270,7 @@ class InviteSingle(APIView):
     serializer_class = InviteSerializer
 
     @swagger_auto_schema(operation_id="change_single_invite", request_body=InviteSerializer, operation_description="Изменить приглашение", tags=["Invites"])
-    @method_permission_classes((IsUser, IsModerator))
+    @method_permission_classes((IsAuthentificated,))
     def put(self, request, meetup_id, speaker_id, format=None):
         invite = get_object_or_404(self.model_class.objects.filter(speaker_id=speaker_id), meetup_id=meetup_id)
         serializer = self.serializer_class(invite, data=request.data, partial=True)
@@ -276,7 +280,7 @@ class InviteSingle(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(operation_id="delete_single_invite", operation_description="Отменить приглашение", tags=["Invites"])
-    @method_permission_classes((IsUser, IsModerator))
+    @method_permission_classes((IsAuthentificated,))
     def delete(self, request, meetup_id, speaker_id, format=None):
         invite = get_object_or_404(self.model_class.objects.filter(speaker_id=speaker_id), meetup_id=meetup_id)
         invite.delete()
@@ -299,6 +303,21 @@ class UserViewSet(viewsets.ModelViewSet):
                                      is_staff=serializer.data['is_staff'])
             return Response({'status': 'Success'}, status=200)
         return Response({'status': 'Error', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()  # Получаем объект, который нужно обновить
+        serializer = self.serializer_class(instance, data=request.data, partial=True)  # partial=True для PATCH
+        if serializer.is_valid():
+            # Если пароль был передан, хэшируем его
+            if 'password' in request.data:
+                instance.set_password(request.data['password'])
+                instance.save()
+                # Убираем пароль из serializer.data, чтобы он не сохранялся в открытом виде
+                serializer.validated_data.pop('password', None)
+
+            serializer.save()  # Сохраняем остальные данные
+            return Response({'status': 'Success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'status': 'Error', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 @csrf_exempt
 @swagger_auto_schema(method='post', request_body=UserSerializer, tags=['Accounts'])
@@ -311,7 +330,7 @@ def login_view(request):
     if user is not None:
         random_key = str(uuid.uuid4())
         session_storage.set(random_key, username)
-        response = JsonResponse({'status': 'OK'}, status=200)
+        response = JsonResponse({'status': 'OK', 'userId': user.id, 'username': user.username, 'is_staff': user.is_staff}, status=200)
         response.set_cookie("session_id", random_key)
         return response
     else:

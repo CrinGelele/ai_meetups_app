@@ -24,6 +24,7 @@ class Meetup(models.Model):
     topic = models.TextField(null = True, blank = True)
     meetup_date = models.DateTimeField(null = True, blank = True)
     viewers = models.IntegerField(null = True, blank = True)
+    qr = models.TextField(null=True, blank=True)
 
     def save(self, force_insert=False, force_update=False):
         if self.status == 'Завершена':

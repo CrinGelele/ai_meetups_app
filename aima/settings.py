@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'api.apps.ApiConfig',
     'django_filters',
-    'drf_yasg'
+    'drf_yasg',
+    #'corsheaders'
 ]
 
 REDIS_HOST = '0.0.0.0'
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'aima.urls'
@@ -84,7 +86,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'aima.wsgi.application'
+'''
+CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOW_CREDENTIALS = True  # Разрешить передачу кук
+'''
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
